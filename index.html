@@ -9,6 +9,21 @@
 <link rel="mask-icon" href="brand/favicon.svg" color="#5B3A52">
 <meta name="theme-color" content="#FAFAF7">
 
+<!-- Open Graph & Twitter Card for deterministic social previews -->
+<meta property="og:title" content="Lumen — Governed AI Analytics">
+<meta property="og:description" content="AI-ready BI and data governance, built for autonomous analysis.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lumen-analytics.com/">
+<meta property="og:image" content="https://lumen-analytics.com/brand/favicon.svg">
+<meta property="og:image:type" content="image/svg+xml">
+<meta property="og:image:alt" content="Lumen Analytics mark">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lumen — Governed AI Analytics">
+<meta name="twitter:description" content="AI-ready BI and data governance, built for autonomous analysis.">
+<meta name="twitter:image" content="https://lumen-analytics.com/brand/favicon.svg">
+<meta name="twitter:image:alt" content="Lumen Analytics mark">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
@@ -29,15 +44,15 @@
     --warn:      #8C3A2E;
     --warn-tint: #F3E4DF;
 
-    /* Dark band — same warm family, inverted */
-    --d-bg:      #1B1B1A;
-    --d-bg-soft: #232321;
-    --d-ink:     #ECE7DC;
-    --d-ink-soft:#C8C3B7;
-    --d-muted:   #8E8C84;
-    --d-hair:    #2D2C29;
-    --d-accent:  #C9A6BC;
-    --d-accent-soft: rgba(201,166,188,0.12);
+    /* Header band — lighter aubergine charcoal, still distinct from body */
+    --d-bg:      #2F2A30;
+    --d-bg-soft: #3A343B;
+    --d-ink:     #F1E9EE;
+    --d-ink-soft:#D3C8CF;
+    --d-muted:   #B2A4AD;
+    --d-hair:    #4A4249;
+    --d-accent:  #D8B5CA;
+    --d-accent-soft: rgba(216,181,202,0.16);
 
     --serif: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, sans-serif;
     --mono:  'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -45,6 +60,9 @@
     --measure:   38rem;   /* body copy line length */
     --container: 56rem;   /* figures + structure */
     --gutter:    clamp(1.25rem, 3vw, 2rem);
+    --dur-fast: 240ms;
+    --dur-med: 620ms;
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -64,9 +82,12 @@
 
   /* ===== Dark band (header + hero) ===== */
   .band-dark {
-    background: var(--d-bg);
+    background:
+      radial-gradient(140% 120% at 12% 0%, rgba(216,181,202,0.09), transparent 46%),
+      linear-gradient(180deg, #38303A 0%, var(--d-bg) 58%);
     color: var(--d-ink);
     border-bottom: 1px solid var(--d-hair);
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04);
     padding: 0 var(--gutter);            /* full-bleed: band owns gutter */
   }
   .band-dark .topbar {
@@ -106,22 +127,48 @@
   .nav {
     display: flex;
     align-items: center;
+    position: relative;
     gap: 1rem;
     font-family: var(--mono);
     font-size: 0.78rem;
     letter-spacing: 0.02em;
+  }
+  .nav .links {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
   }
   .nav a {
     color: var(--d-muted);
     text-decoration: none;
     padding: 0.25rem 0;
     display: inline-flex;
+    position: relative;
     align-items: baseline;
     gap: 0.4rem;
     transition: color 120ms;
   }
   .nav a .n { color: var(--d-accent); }
   .nav a:hover { color: var(--d-ink); }
+  .nav .links a[href^="#"]::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.28rem;
+    width: 100%;
+    height: 1px;
+    background: var(--d-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-fast) var(--ease-standard);
+  }
+  .nav .links a[href^="#"]:hover::after,
+  .nav .links a[href^="#"].is-active::after {
+    transform: scaleX(1);
+  }
+  .nav .links a[href^="#"].is-active {
+    color: var(--d-ink);
+  }
   .nav a.nav-cta {
     color: var(--d-bg);
     background: var(--d-accent);
@@ -142,26 +189,36 @@
     cursor: pointer;
   }
   @media (max-width: 720px) {
-    .nav .links { display: none; }
-    .nav.open .links {
-      display: flex;
+    .nav .toggle { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .nav .links {
       flex-direction: column;
+      align-items: flex-start;
       gap: 0.85rem;
       position: absolute;
-      right: var(--gutter);
-      top: 4.25rem;
+      right: 0;
+      top: calc(100% + 0.75rem);
+      min-width: min(84vw, 18.5rem);
       background: var(--d-bg-soft);
       padding: 1rem 1.25rem;
       border: 1px solid var(--d-hair);
       border-radius: 4px;
-      z-index: 10;
+      z-index: 20;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-0.35rem);
+      transition:
+        opacity var(--dur-fast) var(--ease-standard),
+        transform var(--dur-fast) var(--ease-standard),
+        visibility 0s linear var(--dur-fast);
     }
-    .nav .toggle { display: inline-flex; align-items: center; gap: 0.4rem; }
-  }
-  .nav .links {
-    display: flex;
-    align-items: center;
-    gap: 1.1rem;
+    .nav.open .links {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition-delay: 0s;
+    }
   }
 
   /* ===== Hero grid ===== */
@@ -268,6 +325,7 @@
   /* ===== Section rhythm ===== */
   section { padding: clamp(2.75rem, 5vh, 4rem) 0; }
   section + section { border-top: 1px solid var(--hair); }
+  section[id] { scroll-margin-top: 5.5rem; }
 
   .sec-head { margin-bottom: 2rem; }
   .kicker {
@@ -326,6 +384,41 @@
     background: var(--bg-card);
     border-radius: 4px;
     overflow: hidden;
+  }
+
+  /* ===== Micro animations ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+    filter: blur(5px);
+    transition:
+      opacity var(--dur-med) var(--ease-standard),
+      transform var(--dur-med) var(--ease-standard),
+      filter var(--dur-med) var(--ease-standard);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal.in-view {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  .fig,
+  .product-card,
+  .path-card,
+  .attest,
+  .kr-card {
+    transition:
+      transform var(--dur-fast) var(--ease-standard),
+      box-shadow var(--dur-fast) var(--ease-standard),
+      border-color var(--dur-fast) var(--ease-standard);
+  }
+  .fig:hover,
+  .product-card:hover,
+  .path-card:hover,
+  .attest:hover,
+  .kr-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 34px rgba(12, 10, 8, 0.12);
   }
   .fig-head {
     display: flex;
@@ -603,6 +696,47 @@
   a.cta:active { transform: translateY(1px); }
   .cta-aside { color: var(--muted); font-size: 0.95rem; max-width: 22rem; }
 
+  /* ===== Lighthouse checklist ===== */
+  .audit-box {
+    margin-top: 1.25rem;
+    border: 1px solid var(--hair);
+    background: var(--bg-card);
+    border-radius: 4px;
+    padding: 1rem 1.1rem 1.15rem;
+  }
+  .audit-box-head {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.8rem;
+  }
+  .audit-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .audit-list li {
+    border-top: 1px dashed var(--hair);
+    padding-top: 0.55rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .audit-list li:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  .audit-list .tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    margin-right: 0.5rem;
+  }
+
   /* ===== Footer ===== */
   footer {
     margin-top: 2rem;
@@ -638,6 +772,16 @@
     .lead { font-size: 1.05rem; }
     .reference { padding-left: 1rem; }
     .fig-body { padding: 1rem 0.75rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; filter: none; }
   }
 </style>
 </head>
@@ -676,7 +820,7 @@
             <h1 class="headline">Built for autonomous analysis.</h1>
             <h2 class="subhead">AI-ready BI and data governance.</h2>
             <p class="lead">
-              <span class="lead-tag">Governed AI Analytics</span> &mdash; every BI and data governance contract in 2027 will be evaluated on whether it's ready for what comes next: AI on top of your data, autonomous analysis, agents doing the plumbing your analysts hate. Most of what's on the shelf today isn't. The AI features fail security review or produce wrong numbers in front of leadership, and the pilot dies at the DPO's desk. We're the version of these tools built for that workload from day one.
+              <span class="lead-tag">Governed AI Analytics</span> &mdash; every BI and data governance contract in 2027 will be evaluated on whether it's ready for what comes next: AI on top of your data, autonomous analysis, agents doing the plumbing your analysts hate. Lumen does that. It is built from the ground up governed AI analytics.
             </p>
           </div>
 
@@ -971,6 +1115,7 @@
           No form. No newsletter. One reply, from Luk, within two working days.
         </div>
       </div>
+
     </div>
   </section>
 
@@ -990,16 +1135,111 @@
     if (!nav) return;
     var btn = nav.querySelector('.toggle');
     if (!btn) return;
+
+    var menuLabel = btn.querySelector('.dots');
+    function setOpen(next) {
+      nav.classList.toggle('open', next);
+      btn.setAttribute('aria-expanded', next ? 'true' : 'false');
+      if (menuLabel) menuLabel.textContent = next ? 'close' : 'menu';
+    }
+
     btn.addEventListener('click', function () {
-      var open = nav.classList.toggle('open');
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      setOpen(!nav.classList.contains('open'));
     });
+
     nav.querySelectorAll('.links a').forEach(function (a) {
       a.addEventListener('click', function () {
-        nav.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
+        setOpen(false);
       });
     });
+
+    document.addEventListener('click', function (event) {
+      if (!nav.contains(event.target)) setOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') setOpen(false);
+    });
+
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 720) setOpen(false);
+    });
+
+    setOpen(false);
+
+    var navSectionLinks = Array.prototype.slice.call(nav.querySelectorAll('.links a[href^="#"]'));
+    function setActiveNavLink(id) {
+      navSectionLinks.forEach(function (link) {
+        var matches = link.getAttribute('href') === '#' + id;
+        link.classList.toggle('is-active', matches);
+        if (matches) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      });
+    }
+
+    var seenRatios = {};
+    var sectionTargets = Array.prototype.slice.call(document.querySelectorAll('section[id]')).filter(function (section) {
+      return nav.querySelector('.links a[href="#' + section.id + '"]');
+    });
+
+    if (sectionTargets.length && 'IntersectionObserver' in window) {
+      var navObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) {
+            delete seenRatios[entry.target.id];
+            return;
+          }
+          seenRatios[entry.target.id] = entry.intersectionRatio;
+        });
+
+        var bestId = null;
+        var bestRatio = 0;
+        Object.keys(seenRatios).forEach(function (id) {
+          if (seenRatios[id] > bestRatio) {
+            bestRatio = seenRatios[id];
+            bestId = id;
+          }
+        });
+
+        if (!bestId && sectionTargets[0]) bestId = sectionTargets[0].id;
+        if (bestId) setActiveNavLink(bestId);
+      }, {
+        rootMargin: '-35% 0px -45% 0px',
+        threshold: [0.15, 0.3, 0.55, 0.75]
+      });
+
+      sectionTargets.forEach(function (section) { navObserver.observe(section); });
+    }
+
+    if (window.location.hash) {
+      var hashId = window.location.hash.replace('#', '');
+      setActiveNavLink(hashId);
+    } else if (sectionTargets[0]) {
+      setActiveNavLink(sectionTargets[0].id);
+    }
+
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var revealTargets = document.querySelectorAll('.hero .eyebrow, .hero .headline, .hero .subhead, .hero .lead, .fig, section .sec-head, section .col, .products, .paths, .pillars, .reference-grid, .detail-row, .cta-row, footer');
+
+    revealTargets.forEach(function (el, index) {
+      el.classList.add('reveal');
+      el.style.setProperty('--reveal-delay', String((index % 8) * 60) + 'ms');
+    });
+
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+      revealTargets.forEach(function (el) { el.classList.add('in-view'); });
+      return;
+    }
+
+    var revealObserver = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+    revealTargets.forEach(function (el) { revealObserver.observe(el); });
   })();
 </script>
 </body>
